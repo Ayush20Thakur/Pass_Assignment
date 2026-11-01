@@ -81,6 +81,10 @@ target_link_libraries(forge_core PUBLIC Threads::Threads)
 # Target 2: forge_server (HTTP / WebSocket / SSE Backend Server)
 # ---------------------------------------------------------------------------
 add_executable(forge_server
+    src/server/job_manager.hpp
+    src/server/job_manager.cpp
+    src/server/server.hpp
+    src/server/server.cpp
     src/server/main.cpp
 )
 
@@ -105,12 +109,21 @@ add_executable(forge_tests
     tests/core/fem1d_test.cpp
     tests/core/stl_test.cpp
     tests/core/csv_test.cpp
+    tests/server/server_test.cpp
+    src/server/job_manager.cpp
+    src/server/server.cpp
 )
 
 target_link_libraries(forge_tests PRIVATE
     forge_core
+    httplib::httplib
+    nlohmann_json::nlohmann_json
     doctest::doctest
 )
+
+if(WIN32)
+    target_link_libraries(forge_tests PRIVATE ws2_32 crypt32)
+endif()
 
 add_test(NAME core_tests COMMAND forge_tests)
 set_tests_properties(core_tests PROPERTIES

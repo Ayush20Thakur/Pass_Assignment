@@ -36,3 +36,13 @@ This document records architectural, numerical, and engineering decisions taken 
 - **Decision**: The CSV parser parses leading `#` comments, detects `# Synthetic`, and sets `is_synthetic = true`. Any row deviating from 5 finite numerical values or containing duplicate node IDs returns a structured `Error` specifying the offending line number.
 - **Verification**: Tested against valid 3-node, synthetic 925-node, 25,000-node stress test, and 6 malformed fixtures (empty, header-only, wrong header, short row, duplicate ID, NaN).
 
+## Decision 008: Ephemeral Random Port Binding with wait_until_ready()
+- **Context**: Master Prompt Stack and Section 4 require the server to bind to a random free port on `127.0.0.1` to avoid port contention.
+- **Decision**: Use `httplib::Server::bind_to_any_port("127.0.0.1")` which delegates to the operating system TCP stack to allocate an available ephemeral port. The server thread calls `http_server_->wait_until_ready()` to synchronize listener initialization before returning.
+- **Verification**: Integration test suite boots `ForgeServer(0)`, retrieves `get_port() > 0`, and conducts concurrent HTTP transactions over localhost.
+
+## Decision 009: Atomic Export Writes and Fast Stop Token Cancellation
+- **Context**: Runtime model mandates atomic export file writes (temp file then rename) and fast cancellation via `DELETE /api/jobs/{id}` without leaving corrupted partial files.
+- **Decision**: Worker jobs write to `results/<name>.tmp` and rename atomically to `results/<name>` via `std::filesystem::rename` upon successful completion. Background workers check `job->stop_token.load()` at each chunk iteration; on cancellation, the `.tmp` file is deleted via `std::filesystem::remove`.
+- **Verification**: Integration test verifies cancellation returns in $< 500$ ms and asserts that `results/convergence.csv.tmp` does not exist on disk.
+

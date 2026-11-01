@@ -161,7 +161,7 @@ bool is_binary_stl(std::string_view raw_content, size_t total_size) noexcept {
 }
 
 std::variant<StlMesh, Error> parse_stl_string(std::string_view content) {
-    if (content.empty()) {
+    if (trim_whitespace(content).empty()) {
         return Error{"Empty STL input", 1, "Provide a valid ASCII STL file containing solid definitions"};
     }
 
@@ -329,3 +329,4 @@ std::variant<StlMesh, Error> parse_stl_file(std::string_view file_path) {
 }
 
 } // namespace forge::core
+

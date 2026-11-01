@@ -112,7 +112,7 @@ std::variant<int64_t, Error> parse_node_id(std::string_view field, size_t line_n
 } // namespace
 
 std::variant<NodalCsvData, Error> parse_nodal_csv_string(std::string_view content) {
-    if (content.empty()) {
+    if (trim_whitespace(content).empty()) {
         return Error{"CSV file is completely empty (0 bytes)", 1,
                      "Provide a valid CSV file with header: node_id,x_m,y_m,z_m,temperature_C"};
     }
@@ -238,3 +238,4 @@ std::variant<NodalCsvData, Error> parse_nodal_csv_file(std::string_view file_pat
 }
 
 } // namespace forge::core
+

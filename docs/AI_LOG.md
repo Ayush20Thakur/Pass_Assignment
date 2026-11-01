@@ -38,3 +38,13 @@ Each entry records:
   - Total doctest test cases increased from 6 to 14 (201 assertions), all passing green in 0.38s.
 - **Wrong Suggestions / Challenge Test**: Tested behavior when ASCII STL contains facet normals in the file versus computing facet normals from vertices. Implemented both parsing and vertex cross-product recomputation to ensure normals are guaranteed unit-length even if the file's header normals were malformed or zero, while flagging degenerate triangles (area < 1e-18).
 
+### Phase 3: Server, Jobs, SSE (Days 3–4)
+- **Date & Model**: 2026-11-02, Antigravity IDE (Gemini 3.8 Flash)
+- **Prompt**: "Phase 3: Server, jobs, SSE (Days 3–4)" per section 4.
+- **Output Summary**: Implemented `src/server/job_manager.{hpp,cpp}` (job state machine, atomic progress, stop token, atomic file writes), `src/server/server.{hpp,cpp}` (C++ httplib server, ephemeral free port binding on 127.0.0.1, REST routes, SSE events endpoint, atomic export downloader, graceful shutdown endpoint), updated `src/server/main.cpp`, and built integration test suite in `tests/server/server_test.cpp`.
+- **Edits & Validation**:
+  - Initial integration failure: `bind_to_port("127.0.0.1", 0)` in `cpp-httplib` returns a `bool` (evaluating to 1, causing connection attempts to port 1), whereas `bind_to_any_port("127.0.0.1")` returns the actual ephemeral `int` port. Corrected to `bind_to_any_port` and added `http_server_->wait_until_ready()`.
+  - Empty file string trimming: Enhanced empty-input handling in STL and CSV string parsers to catch whitespace-only inputs.
+  - Test results: All 17 test cases (243 assertions) passed green. Verified health endpoint, bad STL 400 error reporting with line number, thermal solve job lifecycle, atomic CSV export download, mid-run cancellation within 500 ms with zero residual `.tmp` files, and graceful shutdown.
+- **Wrong Suggestions / Challenge Test**: Evaluated whether the server should perform thermal FEM solves synchronously within the HTTP handler. Rejected in compliance with Section 4 and the Runtime Model: the server returns HTTP 202 with `job_id`, updates atomic progress on background worker threads, provides real-time SSE updates, and handles cancellation cleanly without blocking the event loop.
+

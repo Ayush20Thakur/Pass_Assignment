@@ -60,6 +60,8 @@ add_library(forge_core STATIC
     src/core/errors.hpp
     src/core/version.hpp
     src/core/version.cpp
+    src/core/fem1d.hpp
+    src/core/fem1d.cpp
 )
 
 target_include_directories(forge_core PUBLIC
@@ -95,6 +97,7 @@ include(CTest)
 
 add_executable(forge_tests
     tests/smoke_test.cpp
+    tests/core/fem1d_test.cpp
 )
 
 target_link_libraries(forge_tests PRIVATE
@@ -102,7 +105,10 @@ target_link_libraries(forge_tests PRIVATE
     doctest::doctest
 )
 
-add_test(NAME smoke COMMAND forge_tests)
+add_test(NAME core_tests COMMAND forge_tests)
+set_tests_properties(core_tests PROPERTIES
+    WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
+)
 
 # ---------------------------------------------------------------------------
 # Target 4: forge_launcher (Win32 + WebView2 Desktop Launcher -> Launch.exe)

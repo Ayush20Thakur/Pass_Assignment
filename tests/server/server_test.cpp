@@ -183,3 +183,58 @@ TEST_CASE("Server Integration: Graceful shutdown endpoint") {
     std::this_thread::sleep_for(std::chrono::milliseconds(150));
     CHECK(!server.is_running());
 }
+
+TEST_CASE("Server Integration: Benchmark run and results endpoints") {
+    ForgeServer server(0);
+    REQUIRE(server.start(true));
+
+    const int port = server.get_port();
+    httplib::Client client("127.0.0.1", port);
+    client.set_connection_timeout(std::chrono::seconds(5));
+    client.set_read_timeout(std::chrono::seconds(5));
+
+    nlohmann::json run_payload = {
+        {"batch_size", 50},
+        {"element_count", 10},
+        {"seed", 42},
+        {"threads", {1, 2}}
+    };
+
+    auto run_res = client.Post("/api/benchmark/run", run_payload.dump(), "application/json");
+    REQUIRE(run_res != nullptr);
+    CHECK(run_res->status == 202);
+
+    auto run_json = nlohmann::json::parse(run_res->body);
+    CHECK(run_json.contains("job_id"));
+    CHECK(run_json["state"] == "queued");
+    const std::string job_id = run_json["job_id"];
+
+    // Poll until completed
+    for (int iter = 0; iter < 100; ++iter) {
+        auto poll_res = client.Get("/api/jobs/" + job_id);
+        REQUIRE(poll_res != nullptr);
+        auto poll_json = nlohmann::json::parse(poll_res->body);
+        if (poll_json["state"] == "done") {
+            CHECK(poll_json.contains("result"));
+            CHECK(poll_json["result"]["results"].size() >= 1);
+            break;
+        }
+        std::this_thread::sleep_for(std::chrono::milliseconds(20));
+    }
+
+    // Verify GET /api/benchmark/results
+    auto get_res = client.Get("/api/benchmark/results");
+    REQUIRE(get_res != nullptr);
+    CHECK(get_res->status == 200);
+    auto get_json = nlohmann::json::parse(get_res->body);
+    CHECK(get_json["status"] == "ok");
+    CHECK(get_json["results"].size() >= 1);
+
+    // Verify GET /api/export/benchmark.csv
+    auto exp_res = client.Get("/api/export/benchmark.csv");
+    REQUIRE(exp_res != nullptr);
+    CHECK(exp_res->status == 200);
+    CHECK(exp_res->body.find("threads,warmup_ms") != std::string::npos);
+
+    server.stop();
+}

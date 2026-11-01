@@ -2,6 +2,7 @@ import './styles/theme.css';
 import { apiClient } from './api/client';
 import { ThermalView } from './views/thermal_view';
 import { GeometryView } from './views/geometry_view';
+import { PerformanceView } from './views/performance_view';
 import { PlaceholderView } from './views/placeholder_view';
 import { toast } from './components/toast';
 
@@ -106,12 +107,7 @@ class ForgeApp {
                 this.currentView = new GeometryView(this.canvasEl, this.inspectorEl);
                 break;
             case 'performance':
-                this.currentView = new PlaceholderView(
-                    this.canvasEl, this.inspectorEl,
-                    'Multithreaded Benchmark',
-                    'Bounded thread pool batch solver measuring speedup and multi-core efficiency.',
-                    'Phase 6'
-                );
+                this.currentView = new PerformanceView(this.canvasEl, this.inspectorEl);
                 break;
             case 'hardware':
                 this.currentView = new PlaceholderView(

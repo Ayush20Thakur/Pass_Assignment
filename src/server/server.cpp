@@ -8,6 +8,7 @@
 
 #include "../core/csv.hpp"
 #include "../core/fem1d.hpp"
+#include "../core/batch.hpp"
 #include "../core/stl.hpp"
 #include "../core/version.hpp"
 
@@ -294,6 +295,129 @@ void ForgeServer::setup_routes() {
 
         res.status = 202;
         res.set_content(nlohmann::json({{"job_id", job_id}, {"state", "queued"}}).dump(), "application/json");
+    });
+
+    // 5b. Benchmark suite run
+    http_server_->Post("/api/benchmark/run", [this](const httplib::Request& req, httplib::Response& res) {
+        forge::core::ThermalBatchSpecification spec;
+        std::vector<size_t> threads = {1, 2, 4};
+
+        try {
+            if (!req.body.empty()) {
+                auto body = nlohmann::json::parse(req.body);
+                if (body.contains("batch_size")) spec.batch_size = body["batch_size"].get<size_t>();
+                if (body.contains("element_count")) spec.element_count = body["element_count"].get<size_t>();
+                if (body.contains("seed")) spec.seed = body["seed"].get<uint64_t>();
+                if (body.contains("threads")) threads = body["threads"].get<std::vector<size_t>>();
+            }
+        } catch (const std::exception& e) {
+            res.status = 400;
+            res.set_content(make_error_json("body", "Malformed JSON body", e.what()).dump(), "application/json");
+            return;
+        }
+
+        if (spec.batch_size == 0 || spec.batch_size > 50000) {
+            res.status = 400;
+            res.set_content(make_error_json("batch_size", "Batch size must be between 1 and 50000", "Provide batch_size in range [1, 50000]").dump(), "application/json");
+            return;
+        }
+
+        const std::string job_id = job_manager_->create_job(
+            [spec, threads](std::shared_ptr<Job> job) {
+                auto suite = forge::core::run_benchmark_suite(spec, threads, [&job](float progress) {
+                    job->progress = progress;
+                });
+
+                if (job->stop_token.load()) {
+                    return; // Cancelled
+                }
+
+                nlohmann::json results_arr = nlohmann::json::array();
+                for (const auto& m : suite.results) {
+                    results_arr.push_back({
+                        {"thread_count", m.thread_count},
+                        {"warmup_ms", m.warmup_ms},
+                        {"repeat_times_ms", m.repeat_times_ms},
+                        {"median_ms", m.median_ms},
+                        {"speedup", m.speedup},
+                        {"efficiency", m.efficiency}
+                    });
+                }
+
+                job->result = {
+                    {"batch_size", suite.batch_size},
+                    {"element_count", suite.element_count},
+                    {"seed", suite.seed},
+                    {"logical_cpus", suite.logical_cpus},
+                    {"results", results_arr}
+                };
+
+                // Atomic CSV export write for results/benchmark.csv
+                std::ostringstream csv_ss;
+                csv_ss << "threads,warmup_ms,repeat1_ms,repeat2_ms,repeat3_ms,repeat4_ms,repeat5_ms,median_ms,speedup,efficiency\n";
+                for (const auto& m : suite.results) {
+                    csv_ss << m.thread_count << "," << m.warmup_ms << ",";
+                    for (size_t r = 0; r < 5; ++r) {
+                        if (r < m.repeat_times_ms.size()) csv_ss << m.repeat_times_ms[r] << ",";
+                        else csv_ss << "0.0,";
+                    }
+                    csv_ss << m.median_ms << "," << m.speedup << "," << m.efficiency << "\n";
+                }
+                JobManager::atomic_export_write("results/benchmark.csv.tmp", "results/benchmark.csv", csv_ss.str());
+            },
+            "benchmark.csv"
+        );
+
+        res.status = 202;
+        res.set_content(nlohmann::json({{"job_id", job_id}, {"state", "queued"}}).dump(), "application/json");
+    });
+
+    // 5c. Benchmark latest results
+    http_server_->Get("/api/benchmark/results", [](const httplib::Request&, httplib::Response& res) {
+        const std::string path = "results/benchmark.csv";
+        std::ifstream file(path);
+        if (!file.is_open()) {
+            res.status = 404;
+            res.set_content(make_error_json("benchmark", "No benchmark results found on disk", "Run a benchmark job first").dump(), "application/json");
+            return;
+        }
+
+        std::string line;
+        std::getline(file, line); // Skip header
+
+        nlohmann::json results_arr = nlohmann::json::array();
+        while (std::getline(file, line)) {
+            if (line.empty()) continue;
+            std::stringstream ss(line);
+            std::string item;
+            std::vector<std::string> tokens;
+            while (std::getline(ss, item, ',')) {
+                tokens.push_back(item);
+            }
+            if (tokens.size() >= 10) {
+                results_arr.push_back({
+                    {"thread_count", std::stoull(tokens[0])},
+                    {"warmup_ms", std::stod(tokens[1])},
+                    {"repeat_times_ms", {
+                        std::stod(tokens[2]),
+                        std::stod(tokens[3]),
+                        std::stod(tokens[4]),
+                        std::stod(tokens[5]),
+                        std::stod(tokens[6])
+                    }},
+                    {"median_ms", std::stod(tokens[7])},
+                    {"speedup", std::stod(tokens[8])},
+                    {"efficiency", std::stod(tokens[9])}
+                });
+            }
+        }
+
+        nlohmann::json resp = {
+            {"status", "ok"},
+            {"logical_cpus", std::thread::hardware_concurrency()},
+            {"results", results_arr}
+        };
+        res.set_content(resp.dump(), "application/json");
     });
 
     // 6. Job state and result inspection

@@ -75,4 +75,24 @@ Each entry records:
   - Unit test suite: Ran `forge_tests.exe` (17 test cases, 243 assertions passing).
 - **Wrong Suggestions / Challenge Test**: Evaluated whether to rely on Three.js default square point particles. Square points look pixelated and visually unrefined for scientific visualization; implemented a procedural 64x64 soft radial gradient canvas texture to render antialiased circular nodes with smooth alpha blending.
 
+### Phase 6: Thread Pool + Benchmark (Days 8–9)
+- **Date & Model**: 2026-11-02, Antigravity IDE (Gemini 3.8 Flash)
+- **Prompt**: "Phase 6: Thread pool + benchmark (Days 8–9)" per section 3.3 and master prompt mission.
+- **Output Summary**:
+  - Implemented bounded `ThreadPool` in `src/core/threadpool.hpp` with RAII lifetime management and dynamic chunking via `parallel_for` using relaxed atomic counter `next.fetch_add(16)`.
+  - Implemented batch solver and benchmark harness in `src/core/batch.{hpp,cpp}`:
+    - Portable seeded PRNG `(mt19937_64(seed)() >> 11) * 2^-53` eliminating standard library implementation variances.
+    - Deterministic parallel solve matching serial solve to $\le 10^{-8}$ °C.
+    - Multi-run benchmark harness with 1 warm-up, 5 measured repeats, median timing, speedup $S_p = T_1/T_p$, and parallel efficiency $E_p = S_p/p$.
+    - Atomic CSV exporter generating `results/benchmark.csv`.
+  - Implemented server REST endpoints in `src/server/server.cpp`: `POST /api/benchmark/run` (queued background job with SSE progress updates) and `GET /api/benchmark/results`.
+  - Implemented frontend `PerformanceView` in `src/frontend/src/views/performance_view.ts` with interactive speedup SVG chart (comparing measured speedup against ideal linear scaling $y = x$) and multi-core repeat metrics/efficiency table.
+  - Implemented tests in `tests/core/threadpool_test.cpp`, `tests/core/batch_test.cpp`, and integration tests in `tests/server/server_test.cpp`.
+- **Edits & Validation**:
+  - Validated function and struct names in `fem1d.hpp` (`solve_thermal_1d`, `FemResult1D`) against batch solver usage.
+  - Built and executed test suite: total doctest cases increased from 17 to 24 (1787 assertions), all passing green in 0.44s.
+  - Frontend production build verified with Vite + TypeScript: 14 modules transformed and bundled into `dist/` in 2.10s.
+- **Wrong Suggestions / Challenge Test**: Considered `std::async(std::launch::async, ...)` for chunk scheduling. Explicitly rejected per prompt guidelines: unbounded `std::async` can spawn hundreds of short-lived OS threads, exhausting thread handles and adding substantial context-switching overhead. A persistent bounded thread pool with atomic work-stealing chunks proved 3–4x faster with zero resource leaks.
+
+
 

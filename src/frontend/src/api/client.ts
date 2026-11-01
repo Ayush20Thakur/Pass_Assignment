@@ -72,6 +72,30 @@ export interface ConvergenceRow {
     observed_order: number;
 }
 
+export interface ThreadBenchmarkResult {
+    thread_count: number;
+    warmup_ms: number;
+    repeat_times_ms: number[];
+    median_ms: number;
+    speedup: number;
+    efficiency: number;
+}
+
+export interface BenchmarkJobResult {
+    batch_size: number;
+    element_count: number;
+    seed: number;
+    logical_cpus: number;
+    results: ThreadBenchmarkResult[];
+}
+
+export interface BenchmarkRunParams {
+    batch_size: number;
+    element_count: number;
+    seed: number;
+    threads: number[];
+}
+
 export interface ThermalJobResult {
     meshes: MeshResult[];
     convergence: ConvergenceRow[];
@@ -110,6 +134,28 @@ export class ApiClient {
         if (!res.ok) {
             const err: ApiError = await res.json().catch(() => ({ message: 'Solve request failed' }));
             throw err;
+        }
+        return res.json();
+    }
+
+    async runBenchmark(params: BenchmarkRunParams): Promise<{ job_id: string; state: string }> {
+        const res = await fetch(`${this.baseUrl}/api/benchmark/run`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(params)
+        });
+
+        if (!res.ok) {
+            const err: ApiError = await res.json().catch(() => ({ message: 'Benchmark request failed' }));
+            throw err;
+        }
+        return res.json();
+    }
+
+    async getBenchmarkResults(): Promise<{ status: string; logical_cpus: number; results: ThreadBenchmarkResult[] }> {
+        const res = await fetch(`${this.baseUrl}/api/benchmark/results`);
+        if (!res.ok) {
+            throw new Error(`Failed to fetch benchmark results (${res.status})`);
         }
         return res.json();
     }

@@ -56,4 +56,10 @@ This document records architectural, numerical, and engineering decisions taken 
 - **Decision**: Use Three.js `BufferGeometry` with `Float32Array` attributes for positions, vertex normals, and vertex colors. Implemented smooth piecewise linear colormap interpolation for Viridis, Inferno, and Cool-Warm. Generated a procedural soft circular sprite texture to render circular nodes without sharp square artifacts. Node inspection uses `THREE.Raycaster` with dynamic threshold scaling with bounding box diagonal (`diag * 0.015`), placing a 3D reticle at the hovered/selected node. Synthetic datasets are marked with a prominent amber badge in accordance with Hard Rule 4.
 - **Verification**: Tested with sample L-bracket mesh (20 triangles), synthetic CSV field (925 nodes), and malformed fixtures; verified instant raycast inspection and graceful error reporting.
 
+## Decision 012: Bounded Thread Pool, Atomic Chunking, and Deterministic Batch Solves
+- **Context**: Section 3.3 mandates a batch solver over $M$ thermal problems with a bounded thread pool (avoiding `std::async` explosion), dynamic chunk counter `fetch_add(16)`, portable PRNG, and deterministic outputs matching serial solve to $\le 10^{-8}$ °C.
+- **Decision**: Implemented `ThreadPool` with RAII lifetime management and worker threads bounded by hardware concurrency. Work distribution uses `std::atomic<size_t> next_chunk{0}` with relaxed `fetch_add(16)`. Random generation utilizes `std::mt19937_64(seed)` with `(r >> 11) * 2^-53` to guarantee bitwise reproducibility across compilers and platforms. Benchmark harness records 1 warm-up run and 5 measured repeats, selecting the median time $T_p$ to calculate speedup $S_p = T_1 / T_p$ and parallel efficiency $E_p = S_p / p$ for $p \in \{1, 2, 4\}$.
+- **Verification**: Verified in `tests/core/batch_test.cpp` and `threadpool_test.cpp` that parallel solve matches serial to $\le 10^{-8}$ °C across 200 problem instances; verified that `results/benchmark.csv` conforms to spec.
+
+
 

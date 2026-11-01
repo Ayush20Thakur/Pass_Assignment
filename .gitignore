@@ -1,0 +1,36 @@
+# Build artifacts
+build/
+bin/
+lib/
+out/
+dist/
+node_modules/
+Release/
+Debug/
+Launch.exe
+*.exe
+*.lib
+*.pdb
+*.obj
+*.ilk
+
+# IDE and Editor files
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+.vscode/*
+!.vscode/launch.json
+!.vscode/tasks.json
+.idea/
+*.swp
+*~
+
+# Package archives
+*.zip
+*.tar.gz
+
+# System files
+Thumbs.db
+[Dd]esktop.ini

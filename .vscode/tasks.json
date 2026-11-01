@@ -1,0 +1,38 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "CMake Configure",
+            "type": "shell",
+            "command": "cmake -B build -S . -DCMAKE_BUILD_TYPE=Release",
+            "group": "build",
+            "problemMatcher": []
+        },
+        {
+            "label": "Build Forge",
+            "type": "shell",
+            "command": "cmake --build build --config Release",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "dependsOn": ["CMake Configure"],
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "Run Tests",
+            "type": "shell",
+            "command": "ctest --test-dir build -C Release --output-on-failure",
+            "group": "test",
+            "dependsOn": ["Build Forge"],
+            "problemMatcher": []
+        },
+        {
+            "label": "Launch Workbench",
+            "type": "shell",
+            "command": "${workspaceFolder}/Launch.exe",
+            "dependsOn": ["Build Forge"],
+            "problemMatcher": []
+        }
+    ]
+}

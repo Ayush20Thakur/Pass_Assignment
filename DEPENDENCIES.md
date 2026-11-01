@@ -16,14 +16,16 @@ This document records every third-party dependency, pinned version, license, sou
 | :--- | :--- | :--- | :--- | :--- |
 | **Microsoft WebView2** | Windows 11 System Evergreen | Proprietary / Redistributable | Microsoft Windows OS | Embedded modern web renderer without bundled browser binaries. |
 
-## Frontend Dependencies (Planned for Phase 4)
+## Frontend Dependencies (Bundled Offline)
 
 | Name | Pinned Version | License | Source / Upstream | Purpose |
 | :--- | :--- | :--- | :--- | :--- |
-| **Three.js** | `r170` | MIT | [threejs.org](https://threejs.org/) | WebGL 3D rendering for STL geometry and CSV temperature point clouds. |
+| **Three.js** | `0.170.0` | MIT | [threejs.org](https://threejs.org/) | WebGL 3D rendering for STL geometry and CSV temperature point clouds. |
 | **uPlot** | `1.6.31` | MIT | [github.com/leeoniya/uPlot](https://github.com/leeoniya/uPlot) | High-performance 2D charting for thermal profiles, convergence log-log plots, and benchmark results. |
 | **Inter** | `v4.1` | SIL Open Font License 1.1 | [rsms.me/inter](https://rsms.me/inter/) | Bundled UI font (no runtime network/CDN requests). |
 | **JetBrains Mono** | `v2.304` | SIL Open Font License 1.1 | [jetbrains.com/lp/mono](https://www.jetbrains.com/lp/mono/) | Bundled monospace font for code, telemetry, and numerical data. |
+| **Vite** | `5.4.10` | MIT | [vitejs.dev](https://vitejs.dev/) | Frontend asset bundler compiling TypeScript and static assets into offline bundle `dist/`. |
+| **TypeScript** | `5.6.3` | Apache-2.0 | [typescriptlang.org](https://www.typescriptlang.org/) | Static type system for UI views and API clients. |
 
 ## Compliance Rules
 - Every third-party library is under a permissive open-source license (MIT, OFL, Apache 2.0).

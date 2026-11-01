@@ -240,3 +240,4 @@ TrainingResult MultiLayerPerceptron::train(const std::vector<std::vector<double>
 }
 
 } // namespace forge::core
+

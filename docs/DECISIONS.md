@@ -46,3 +46,8 @@ This document records architectural, numerical, and engineering decisions taken 
 - **Decision**: Worker jobs write to `results/<name>.tmp` and rename atomically to `results/<name>` via `std::filesystem::rename` upon successful completion. Background workers check `job->stop_token.load()` at each chunk iteration; on cancellation, the `.tmp` file is deleted via `std::filesystem::remove`.
 - **Verification**: Integration test verifies cancellation returns in $< 500$ ms and asserts that `results/convergence.csv.tmp` does not exist on disk.
 
+## Decision 010: Offline-First Bundling with Local WOFF2 Fonts and Relative Base
+- **Context**: Hard Rule 6 dictates zero CDN dependencies and complete offline capability at runtime.
+- **Decision**: Local WOFF2 binaries for Inter and JetBrains Mono are placed in `src/frontend/src/assets/fonts/` and bundled via Vite with `base: './'`. Vite generates an offline distribution in `dist/` where all scripts, styles, and font references use relative paths. `ForgeServer` mounts `dist/` to serve the UI directly over localhost.
+- **Verification**: Built distribution inspected; verified that no CDN links exist in HTML/CSS and that the interface loads offline without active internet connections.
+

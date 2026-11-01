@@ -1,0 +1,533 @@
+/* -------------------------------------------------------------------------
+   Forge Engineering Workbench: Design System & Theme Tokens
+   Compliant with Section 2 of the specification
+   ------------------------------------------------------------------------- */
+
+@font-face {
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url('../assets/fonts/Inter-Regular.woff2') format('woff2');
+}
+
+@font-face {
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 600;
+    font-display: swap;
+    src: url('../assets/fonts/Inter-SemiBold.woff2') format('woff2');
+}
+
+@font-face {
+    font-family: 'JetBrains Mono';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url('../assets/fonts/JetBrainsMono-Regular.woff2') format('woff2');
+}
+
+:root {
+    /* Color Tokens */
+    --bg: #0B1020;
+    --surface: #121A33;
+    --surface-2: #1A2447;
+    --line: #27325F;
+    --text: #E9ECFF;
+    --muted: #8C95D6;
+
+    /* Brand Gradient Stops */
+    --indigo: #6366F1;
+    --violet: #8B5CF6;
+    --cyan: #06B6D4;
+
+    /* Status Tokens */
+    --ok: #34D399;
+    --warn: #F59E0B;
+    --err: #F87171;
+
+    /* Aurora & Visual Accents */
+    --aurora: linear-gradient(120deg, #6366F1 0%, #8B5CF6 50%, #06B6D4 100%);
+    --glow: 0 0 0 1px rgba(139, 92, 246, 0.35), 0 8px 32px rgba(99, 102, 241, 0.25);
+
+    /* Dimensional & Typography Tokens */
+    --radius: 14px;
+    --radius-sm: 8px;
+    --gap: 16px;
+    --font-ui: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    --font-mono: "JetBrains Mono", "Courier New", monospace;
+    --transition-speed: 150ms;
+}
+
+/* Accessibility: Respect Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+    *, ::before, ::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+
+/* Base Styles */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background-color: var(--bg);
+    color: var(--text);
+    font-family: var(--font-ui);
+    font-size: 14px;
+    line-height: 1.5;
+    overflow: hidden;
+    height: 100vh;
+    width: 100vw;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* Visible Focus Rings: 2px cyan */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+[tabindex]:focus-visible {
+    outline: 2px solid var(--cyan);
+    outline-offset: 2px;
+}
+
+/* App Shell Layout */
+#app {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    width: 100vw;
+}
+
+/* Top App Header */
+.app-header {
+    height: 52px;
+    background-color: var(--surface);
+    border-bottom: 1px solid var(--line);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 var(--gap);
+    flex-shrink: 0;
+}
+
+.brand-container {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.brand-title {
+    font-weight: 600;
+    font-size: 18px;
+    background: var(--aurora);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    letter-spacing: -0.5px;
+}
+
+.brand-badge {
+    background-color: var(--surface-2);
+    border: 1px solid var(--line);
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: var(--radius-sm);
+}
+
+.status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    padding: 4px 10px;
+    border-radius: 9999px;
+    background-color: var(--surface-2);
+    border: 1px solid var(--line);
+}
+
+.status-indicator {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+}
+
+.status-indicator.connected {
+    background-color: var(--ok);
+    box-shadow: 0 0 8px var(--ok);
+}
+
+.status-indicator.disconnected {
+    background-color: var(--err);
+}
+
+/* Main Workspace Body */
+.workspace-body {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+}
+
+/* Left Navigation Rail */
+.nav-rail {
+    width: 72px;
+    background-color: var(--surface);
+    border-right: 1px solid var(--line);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: var(--gap) 0;
+    gap: 12px;
+    flex-shrink: 0;
+}
+
+.nav-tab-button {
+    width: 52px;
+    height: 52px;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: var(--radius-sm);
+    color: var(--muted);
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    font-size: 10px;
+    font-weight: 500;
+    position: relative;
+    transition: all var(--transition-speed) ease;
+}
+
+.nav-tab-button:hover {
+    background-color: var(--surface-2);
+    color: var(--text);
+}
+
+.nav-tab-button.active {
+    background-color: var(--surface-2);
+    color: var(--text);
+    border-color: var(--line);
+}
+
+.nav-tab-button.active::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 10px;
+    right: 10px;
+    height: 3px;
+    background: var(--aurora);
+    border-radius: 2px;
+}
+
+/* Center Canvas Area */
+.canvas-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background-color: var(--bg);
+    overflow: hidden;
+    position: relative;
+}
+
+/* Right Inspector Panel */
+.inspector-panel {
+    width: 380px;
+    background-color: var(--surface);
+    border-left: 1px solid var(--line);
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    padding: var(--gap);
+    gap: var(--gap);
+    flex-shrink: 0;
+}
+
+/* Responsive Inspector: At widths < 900px, becomes bottom drawer */
+@media (max-width: 900px) {
+    .workspace-body {
+        flex-direction: column;
+    }
+    .nav-rail {
+        width: 100%;
+        height: 60px;
+        flex-direction: row;
+        border-right: none;
+        border-bottom: 1px solid var(--line);
+        padding: 0 var(--gap);
+        justify-content: center;
+    }
+    .inspector-panel {
+        width: 100%;
+        height: 320px;
+        border-left: none;
+        border-top: 1px solid var(--line);
+    }
+}
+
+/* Form Controls and Cards */
+.card {
+    background-color: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: var(--gap);
+}
+
+.card-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 12px;
+}
+
+.form-label {
+    font-size: 12px;
+    color: var(--muted);
+    font-weight: 500;
+    display: flex;
+    justify-content: space-between;
+}
+
+.form-input {
+    background-color: var(--surface-2);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 13px;
+    padding: 8px 12px;
+    transition: border-color var(--transition-speed) ease;
+}
+
+.form-input:focus {
+    border-color: var(--cyan);
+}
+
+.form-input.invalid {
+    border-color: var(--err);
+}
+
+.field-error {
+    font-size: 11px;
+    color: var(--err);
+    margin-top: 2px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+/* Aurora Buttons */
+.btn-primary {
+    background: var(--aurora);
+    border: none;
+    border-radius: var(--radius-sm);
+    color: #ffffff;
+    font-weight: 600;
+    font-size: 13px;
+    padding: 10px 16px;
+    cursor: pointer;
+    box-shadow: var(--glow);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: transform var(--transition-speed) ease, opacity var(--transition-speed) ease;
+}
+
+.btn-primary:hover:not(:disabled) {
+    transform: translateY(-1px);
+    opacity: 0.95;
+}
+
+.btn-primary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.btn-secondary {
+    background-color: var(--surface-2);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    color: var(--text);
+    font-weight: 500;
+    font-size: 13px;
+    padding: 8px 14px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transition: background-color var(--transition-speed) ease;
+}
+
+.btn-secondary:hover:not(:disabled) {
+    background-color: #23315e;
+}
+
+.btn-secondary:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.btn-cancel {
+    background-color: rgba(248, 113, 113, 0.15);
+    border: 1px solid var(--err);
+    color: var(--err);
+}
+
+.btn-cancel:hover:not(:disabled) {
+    background-color: rgba(248, 113, 113, 0.25);
+}
+
+/* Progress Bar bound to SSE */
+.progress-container {
+    height: 6px;
+    width: 100%;
+    background-color: var(--surface-2);
+    border-radius: 3px;
+    overflow: hidden;
+    position: relative;
+    margin: 8px 0;
+}
+
+.progress-fill {
+    height: 100%;
+    background: var(--aurora);
+    border-radius: 3px;
+    transition: width 150ms ease;
+    width: 0%;
+}
+
+/* Data Tables */
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: var(--font-mono);
+    font-size: 12px;
+}
+
+.data-table th {
+    text-align: left;
+    color: var(--muted);
+    padding: 6px 8px;
+    border-bottom: 1px solid var(--line);
+    font-weight: 500;
+}
+
+.data-table td {
+    padding: 6px 8px;
+    border-bottom: 1px solid rgba(39, 50, 95, 0.5);
+    color: var(--text);
+}
+
+/* Badges */
+.badge-simulated {
+    background-color: rgba(245, 158, 11, 0.2);
+    border: 1px solid var(--warn);
+    color: var(--warn);
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 6px;
+    border-radius: 4px;
+    letter-spacing: 0.5px;
+}
+
+/* Toast and Actionable Errors */
+.toast-container {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    max-width: 420px;
+}
+
+.toast {
+    background-color: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    padding: 12px 16px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+    display: flex;
+    gap: 12px;
+    animation: slideIn 150ms ease;
+}
+
+.toast.error {
+    border-left: 4px solid var(--err);
+}
+
+.toast.success {
+    border-left: 4px solid var(--ok);
+}
+
+.toast-content {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.toast-title {
+    font-weight: 600;
+    font-size: 13px;
+}
+
+.toast-desc {
+    font-size: 12px;
+    color: var(--muted);
+}
+
+.toast-fix {
+    font-size: 11px;
+    color: var(--cyan);
+    font-family: var(--font-mono);
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* uPlot Dark Instrument Overrides */
+.uplot {
+    font-family: var(--font-mono) !important;
+}
+
+.uplot .u-legend {
+    color: var(--muted) !important;
+    font-size: 11px !important;
+}
+
+.uplot .u-legend .u-series th,
+.uplot .u-legend .u-series td {
+    padding: 2px 8px !important;
+}

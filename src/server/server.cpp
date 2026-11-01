@@ -91,6 +91,13 @@ void ForgeServer::setup_cors() {
 }
 
 void ForgeServer::setup_routes() {
+    // Mount static frontend files if dist exists
+    if (std::filesystem::exists("dist")) {
+        http_server_->set_mount_point("/", "dist");
+    } else if (std::filesystem::exists("../dist")) {
+        http_server_->set_mount_point("/", "../dist");
+    }
+
     // 1. Health check
     http_server_->Get("/api/health", [](const httplib::Request&, httplib::Response& res) {
         nlohmann::json resp = {

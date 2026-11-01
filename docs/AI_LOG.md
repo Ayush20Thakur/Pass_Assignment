@@ -48,3 +48,14 @@ Each entry records:
   - Test results: All 17 test cases (243 assertions) passed green. Verified health endpoint, bad STL 400 error reporting with line number, thermal solve job lifecycle, atomic CSV export download, mid-run cancellation within 500 ms with zero residual `.tmp` files, and graceful shutdown.
 - **Wrong Suggestions / Challenge Test**: Evaluated whether the server should perform thermal FEM solves synchronously within the HTTP handler. Rejected in compliance with Section 4 and the Runtime Model: the server returns HTTP 202 with `job_id`, updates atomic progress on background worker threads, provides real-time SSE updates, and handles cancellation cleanly without blocking the event loop.
 
+### Phase 4: Frontend Shell + Design System (Days 5–6)
+- **Date & Model**: 2026-11-02, Antigravity IDE (Gemini 3.8 Flash)
+- **Prompt**: "Phase 4: Frontend shell + design system (Days 5–6)" per section 2 and thermal view specifications.
+- **Output Summary**: Built Vite + TypeScript frontend in `src/frontend/` with `package.json` (pinned `uplot 1.6.31`, `three 0.170.0`), `tsconfig.json`, `vite.config.ts`, `src/styles/theme.css` (precision-instrument dark theme, tokens, aurora gradient, focus rings, reduced motion, responsive drawer breakpoint at 900px), bundled local WOFF2 fonts (`Inter` and `JetBrains Mono`), `src/api/client.ts`, `src/components/toast.ts`, and full `ThermalView` with interactive uPlot charts (temperature distribution and log-log convergence with ideal 2.00 slope), inline validation, SSE progress, and cancellation.
+- **Edits & Validation**:
+  - Offline font compliance: Verified that zero CDN tags exist in `index.html` or styles; font files are resolved from local assets directory.
+  - TypeScript strictness: Handled unused property error during `tsc && vite build`, achieving clean production build into `dist/`.
+  - C++ Backend Integration: Added static mount point in `ForgeServer` to serve `dist/` directly over localhost.
+  - Responsive design verified: Tested layout below 900px where right inspector adapts into a bottom drawer.
+- **Wrong Suggestions / Challenge Test**: Evaluated whether to load Google Fonts over HTTP/HTTPS at runtime for convenience. Explicitly rejected per Rule 6 (offline-first requirement); downloaded official WOFF2 releases directly into the repository.
+

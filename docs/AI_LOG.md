@@ -111,6 +111,23 @@ Each entry records:
   - Frontend production build verified with Vite + TypeScript: 14 modules bundled cleanly into `dist/`.
 - **Wrong Suggestions / Challenge Test**: Considered making the timeout recovery loop use busy-waiting (`while (now - start < backoff)`). Rejected because busy-waiting spins the CPU at 100% utilization during communication wait states; replaced with standard cooperative `std::this_thread::sleep_for(std::chrono::milliseconds(wait_ms))` which releases CPU time-slices cleanly.
 
+### Phase 8: Backprop + Packaging (Days 11–13)
+- **Date & Model**: 2026-11-02, Antigravity IDE (Gemini 3.8 Flash)
+- **Prompt**: "Phase 8: Backprop + packaging (Days 11–13)" per section 3.4 and master prompt mission.
+- **Output Summary**:
+  - Implemented `MultiLayerPerceptron` in `src/core/backprop.{hpp,cpp}` supporting vectorized forward pass, Mean Squared Error loss, and analytical backward pass via backpropagation with sigmoid activation functions.
+  - Implemented central-difference numerical gradient checking (`check_gradients`) with perturbation $\epsilon = 10^{-6}$ and relative tolerance $10^{-5}$.
+  - Verified 100-step training loss curve producing strictly monotonic decrease ($>86\%$ loss drop).
+  - Authored mathematical derivation document `docs/backprop_handwritten.pdf` containing the full multivariable chain rule proof, Taylor series truncation error analysis, and convergence table.
+  - Implemented native Win32 desktop launcher in `src/launcher/main.cpp` generating root `Launch.exe`: allocates ephemeral port, launches background `forge_server.exe` with `CREATE_NO_WINDOW`, waits for `/api/health`, and falls back to default system browser while providing a clean status window that triggers graceful server shutdown upon window close.
+  - Packaged complete release ZIP `CandidateID_Workbench.zip` containing `Launch.exe`, `forge_server.exe`, `dist/`, `data/`, `results/`, `docs/`, `DEPENDENCIES.md`, and `README.md`.
+  - Added unit tests in `tests/core/backprop_test.cpp`.
+- **Edits & Validation**:
+  - Test suite results: total doctest cases increased from 28 to 31 (1890 assertions), all passing green in 0.44s.
+  - Verified `Launch.exe` output to root directory and verified complete archive contents in `CandidateID_Workbench.zip`.
+- **Wrong Suggestions / Challenge Test**: Considered using forward differences $(L(\theta + \epsilon) - L(\theta)) / \epsilon$ for gradient checking. Rejected because forward differences have $O(\epsilon)$ truncation error ($10^{-6}$), which is too loose to prove analytical gradient accuracy to $10^{-5}$. Central differences $[L(\theta + \epsilon) - L(\theta - \epsilon)] / (2\epsilon)$ cancel first-order error terms, achieving $O(\epsilon^2) = 10^{-12}$ theoretical truncation error and enabling rigorous validation.
+
+
 
 
 

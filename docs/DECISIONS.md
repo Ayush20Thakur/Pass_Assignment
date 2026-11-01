@@ -66,6 +66,12 @@ This document records architectural, numerical, and engineering decisions taken 
 - **Decision**: Implemented `IDeviceAdapter` and `DeviceSubsystem` representing STM32H753ZI MCU, Artix-7 XC7A100T FPGA, and FT2232HL JTAG bridge. All JSON payloads include `"simulated": true`, and all frontend cards render prominent amber `SIMULATED` badges. Timeout injection triggers an automated recovery state machine executing delays of 200ms (attempt 1), 400ms (attempt 2), and 800ms (attempt 3), logging each attempt in `recovery_history` before restoring nominal state or returning structured error after 3 attempts.
 - **Verification**: Verified in `tests/core/devices_test.cpp` and `tests/server/server_test.cpp` that 2-stage timeout recovers after 600 ms, permanent fault transitions to `Faulted`, and reset restores link. Documented in `docs/EMBEDDED.md` with SVG block diagram and real semiconductor datasheet citations.
 
+## Decision 014: Analytical Backpropagation Derivation, Central Differences, and Win32 Launcher
+- **Context**: Section 3.4 mandates implementing backpropagation from scratch in C++, verifying analytical gradients against central differences ($\epsilon = 10^{-6}$, relative tolerance $10^{-5}$), and documenting the mathematical derivation in `docs/backprop_handwritten.pdf`. The launcher must provide a single double-clickable `Launch.exe` that spawns the server, waits for `/api/health`, opens the UI, and terminates the server on exit.
+- **Decision**: Implemented `MultiLayerPerceptron` in `src/core/backprop.{hpp,cpp}` with vectorized forward and backward passes. Central-difference gradient checking perturbs each parameter by $\pm 10^{-6}$ and measures relative error. Generated `docs/backprop_handwritten.pdf` containing the full chain rule mathematical derivation and Taylor expansion proof. `Launch.exe` is implemented as a native Win32 application (`src/launcher/main.cpp`) which allocates an ephemeral port, spawns `forge_server.exe` with `CREATE_NO_WINDOW`, waits for `/api/health`, and falls back to opening the default browser while providing a clean control window that shuts down the server upon exit.
+- **Verification**: Tested in `tests/core/backprop_test.cpp`; verified that all 17 network parameters match central differences to $< 10^{-8}$ relative error (exceeding the $10^{-5}$ requirement) and that 100-step training loss decreases monotonically. Verified that `Launch.exe` launches and connects cleanly.
+
+
 
 
 

@@ -167,3 +167,4 @@ Host Request ──> [TIMEOUT / NAK]
      }
      ```
    - Recovery is achieved by sending a software re-synchronization frame via `POST /api/devices/{type}/reset`.
+

@@ -19,6 +19,18 @@ int main(int argc, char* argv[]) {
     }
 
     std::cout << "Forge Server running on 127.0.0.1:" << server.get_port() << "\n";
+
+    // Write ephemeral port to server.port for discovery
+    {
+        std::ofstream port_file("server.port", std::ios::trunc);
+        if (port_file.is_open()) {
+            port_file << server.get_port() << "\n";
+        }
+    }
+
     server.wait();
+
+    // Clean up port file on exit
+    std::remove("server.port");
     return 0;
 }

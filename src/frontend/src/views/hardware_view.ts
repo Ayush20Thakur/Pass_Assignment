@@ -479,3 +479,4 @@ export class HardwareView {
         this.inspectorPanel.innerHTML = '';
     }
 }
+

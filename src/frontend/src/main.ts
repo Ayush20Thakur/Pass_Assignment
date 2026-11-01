@@ -1,6 +1,7 @@
 import './styles/theme.css';
 import { apiClient } from './api/client';
 import { ThermalView } from './views/thermal_view';
+import { GeometryView } from './views/geometry_view';
 import { PlaceholderView } from './views/placeholder_view';
 import { toast } from './components/toast';
 
@@ -102,12 +103,7 @@ class ForgeApp {
                 this.currentView = new ThermalView(this.canvasEl, this.inspectorEl);
                 break;
             case 'geometry':
-                this.currentView = new PlaceholderView(
-                    this.canvasEl, this.inspectorEl,
-                    '3D Geometry Viewer',
-                    'Interactive Three.js renderer for ASCII STL triangles and ANSYS nodal CSV point clouds.',
-                    'Phase 5'
-                );
+                this.currentView = new GeometryView(this.canvasEl, this.inspectorEl);
                 break;
             case 'performance':
                 this.currentView = new PlaceholderView(

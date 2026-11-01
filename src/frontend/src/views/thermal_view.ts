@@ -556,3 +556,4 @@ export class ThermalView {
         this.logPlot = new uPlot(opts, data, el);
     }
 }
+

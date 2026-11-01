@@ -10,6 +10,37 @@ export interface ApiError {
     hint?: string;
 }
 
+export interface BoundingBox {
+    min_x: number;
+    max_x: number;
+    min_y: number;
+    max_y: number;
+    min_z: number;
+    max_z: number;
+    diagonal: number;
+}
+
+export interface StlMeshResponse {
+    solid_name: string;
+    triangle_count: number;
+    degenerate_count: number;
+    warnings: string[];
+    bounding_box: BoundingBox;
+    vertices: number[];
+    normals: number[];
+}
+
+export interface NodalCsvResponse {
+    node_count: number;
+    min_temperature_c: number;
+    max_temperature_c: number;
+    is_synthetic: boolean;
+    bounding_box: BoundingBox;
+    node_ids: number[];
+    positions: number[];
+    temperatures: number[];
+}
+
 export interface ThermalSolveParams {
     length_m: number;
     area_m2: number;
@@ -132,6 +163,63 @@ export class ApiClient {
     getExportUrl(filename: string): string {
         return `${this.baseUrl}/api/export/${encodeURIComponent(filename)}`;
     }
+
+    async uploadStl(content: string): Promise<StlMeshResponse> {
+        const res = await fetch(`${this.baseUrl}/api/geometry/stl`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain' },
+            body: content
+        });
+
+        if (!res.ok) {
+            const err: ApiError = await res.json().catch(() => ({ message: 'STL upload failed' }));
+            throw err;
+        }
+        return res.json();
+    }
+
+    async loadSampleStl(): Promise<StlMeshResponse> {
+        const res = await fetch(`${this.baseUrl}/api/geometry/stl`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ path: 'data/cube_or_bracket.stl' })
+        });
+
+        if (!res.ok) {
+            const err: ApiError = await res.json().catch(() => ({ message: 'Failed to load sample STL' }));
+            throw err;
+        }
+        return res.json();
+    }
+
+    async uploadCsv(content: string): Promise<NodalCsvResponse> {
+        const res = await fetch(`${this.baseUrl}/api/results/csv`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain' },
+            body: content
+        });
+
+        if (!res.ok) {
+            const err: ApiError = await res.json().catch(() => ({ message: 'CSV upload failed' }));
+            throw err;
+        }
+        return res.json();
+    }
+
+    async loadSampleCsv(): Promise<NodalCsvResponse> {
+        const res = await fetch(`${this.baseUrl}/api/results/csv`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ path: 'data/nodal_temperature_synthetic.csv' })
+        });
+
+        if (!res.ok) {
+            const err: ApiError = await res.json().catch(() => ({ message: 'Failed to load sample CSV' }));
+            throw err;
+        }
+        return res.json();
+    }
 }
 
 export const apiClient = new ApiClient();
+

@@ -51,3 +51,9 @@ This document records architectural, numerical, and engineering decisions taken 
 - **Decision**: Local WOFF2 binaries for Inter and JetBrains Mono are placed in `src/frontend/src/assets/fonts/` and bundled via Vite with `base: './'`. Vite generates an offline distribution in `dist/` where all scripts, styles, and font references use relative paths. `ForgeServer` mounts `dist/` to serve the UI directly over localhost.
 - **Verification**: Built distribution inspected; verified that no CDN links exist in HTML/CSS and that the interface loads offline without active internet connections.
 
+## Decision 011: WebGL 3D Geometry Rendering & Perceptual Colormapping
+- **Context**: Phase 5 requires interactive 3D rendering of ASCII STL facets and ANSYS nodal CSV point clouds, with perceptual colormaps, raycast node inspection, and clear synthetic provenance.
+- **Decision**: Use Three.js `BufferGeometry` with `Float32Array` attributes for positions, vertex normals, and vertex colors. Implemented smooth piecewise linear colormap interpolation for Viridis, Inferno, and Cool-Warm. Generated a procedural soft circular sprite texture to render circular nodes without sharp square artifacts. Node inspection uses `THREE.Raycaster` with dynamic threshold scaling with bounding box diagonal (`diag * 0.015`), placing a 3D reticle at the hovered/selected node. Synthetic datasets are marked with a prominent amber badge in accordance with Hard Rule 4.
+- **Verification**: Tested with sample L-bracket mesh (20 triangles), synthetic CSV field (925 nodes), and malformed fixtures; verified instant raycast inspection and graceful error reporting.
+
+

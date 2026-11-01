@@ -26,3 +26,13 @@ This document records architectural, numerical, and engineering decisions taken 
 - **Decision**: Implement a specialized $O(N)$ tridiagonal Thomas algorithm. Since the assembled 1D stiffness matrix is symmetric positive definite and strictly diagonally dominant, no pivoting is required.
 - **Verification**: Verified numerically for $N \in [1, 1000000]$ with zero division errors and deterministic timing.
 
+## Decision 006: Robust Binary STL Detection and Rejection
+- **Context**: Section 3.2 requires binary STL files to be recognized and rejected with the exact message: `"binary STL not supported, export ASCII"`.
+- **Decision**: Validate size criteria `file_size >= 84 && (file_size - 84) % 50 == 0`, check the 32-bit facet count header at byte 80, and scan for binary non-printable control characters. Return line 1 with actionable guidance to re-export as ASCII.
+- **Verification**: Tested against 84-byte binary STL fixture; verified exact message and line number without parser crashes.
+
+## Decision 007: Synthetic CSV Provenance and Schema Invariants
+- **Context**: Hard Rule 4 prohibits calling synthetic test data an ANSYS export. Section 3.2 enforces strict 5-field schema: `node_id,x_m,y_m,z_m,temperature_C`.
+- **Decision**: The CSV parser parses leading `#` comments, detects `# Synthetic`, and sets `is_synthetic = true`. Any row deviating from 5 finite numerical values or containing duplicate node IDs returns a structured `Error` specifying the offending line number.
+- **Verification**: Tested against valid 3-node, synthetic 925-node, 25,000-node stress test, and 6 malformed fixtures (empty, header-only, wrong header, short row, duplicate ID, NaN).
+

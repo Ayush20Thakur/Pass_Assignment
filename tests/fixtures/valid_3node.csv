@@ -1,0 +1,5 @@
+# Valid synthetic 3-node reference fixture
+node_id,x_m,y_m,z_m,temperature_C
+1,0.0,0.0,0.0,25.0
+2,0.5,0.0,0.0,50.0
+3,1.0,0.0,0.0,75.0

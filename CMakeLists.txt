@@ -60,8 +60,13 @@ add_library(forge_core STATIC
     src/core/errors.hpp
     src/core/version.hpp
     src/core/version.cpp
+    src/core/geometry_types.hpp
     src/core/fem1d.hpp
     src/core/fem1d.cpp
+    src/core/stl.hpp
+    src/core/stl.cpp
+    src/core/csv.hpp
+    src/core/csv.cpp
 )
 
 target_include_directories(forge_core PUBLIC
@@ -98,6 +103,8 @@ include(CTest)
 add_executable(forge_tests
     tests/smoke_test.cpp
     tests/core/fem1d_test.cpp
+    tests/core/stl_test.cpp
+    tests/core/csv_test.cpp
 )
 
 target_link_libraries(forge_tests PRIVATE

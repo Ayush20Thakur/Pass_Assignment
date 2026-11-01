@@ -28,3 +28,13 @@ Each entry records:
   - Test results: All 6 test cases (60 assertions) passed green. Midpoint errors for $N \in \{10, 20, 40, 80\}$ matched $q h^2 / (8k)$ to $< 10^{-12}$ °C. Observed order of accuracy = 2.000. Nodal error $< 10^{-12}$ °C. Energy balance generated $= qAL$ to $< 10^{-12}$ W. CSV files generated in `results/`.
 - **Wrong Suggestions / Challenge Test**: Evaluated whether nodal error could exhibit $O(h^2)$ discretization error. Disproved and verified theoretical property: for 1D Poisson equations with constant coefficients and linear elements, the finite element solution is nodally exact (Green's function property), so nodal error is at floating-point epsilon ($\sim 10^{-13}$ °C), with all discretization error located exclusively between nodes.
 
+### Phase 2: Parsers and Fixtures (Task B)
+- **Date & Model**: 2026-11-02, Antigravity IDE (Gemini 3.8 Flash)
+- **Prompt**: "Phase 2: Parsers and fixtures (Day 3)" per section 3.2.
+- **Output Summary**: Implemented `src/core/stl.{hpp,cpp}`, `src/core/csv.{hpp,cpp}`, `src/core/geometry_types.hpp`, fixtures in `tests/fixtures/`, example STL in `data/cube_or_bracket.stl`, synthetic CSV in `data/nodal_temperature_synthetic.csv`, and documentation in `data/PROVENANCE.md`. Implemented test suites in `tests/core/stl_test.cpp` and `tests/core/csv_test.cpp`.
+- **Edits & Validation**:
+  - Validated STL parser against unit cube (12 facets, unit normals) and L-bracket (20 facets, bounding box exact). Verified exact detection of binary STL (84 bytes), empty STL, zero facets, missing endloop, and NaN vertex.
+  - Validated CSV parser against 3-node reference, synthetic 925-node dataset, and 25,000-node stress test (< 250 ms parsing time). Verified rejection of empty, header-only, invalid header, short row, duplicate node ID, and NaN/Inf values with line numbers.
+  - Total doctest test cases increased from 6 to 14 (201 assertions), all passing green in 0.38s.
+- **Wrong Suggestions / Challenge Test**: Tested behavior when ASCII STL contains facet normals in the file versus computing facet normals from vertices. Implemented both parsing and vertex cross-product recomputation to ensure normals are guaranteed unit-length even if the file's header normals were malformed or zero, while flagging degenerate triangles (area < 1e-18).
+

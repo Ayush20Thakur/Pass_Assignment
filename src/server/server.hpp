@@ -14,6 +14,7 @@
 #include <nlohmann/json.hpp>
 
 #include "job_manager.hpp"
+#include "../core/devices.hpp"
 
 namespace forge::server {
 
@@ -50,6 +51,7 @@ private:
 
     std::unique_ptr<httplib::Server> http_server_;
     std::shared_ptr<JobManager> job_manager_;
+    std::shared_ptr<forge::core::DeviceSubsystem> device_subsystem_;
     std::thread server_thread_;
 };
 

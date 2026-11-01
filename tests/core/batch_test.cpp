@@ -106,3 +106,4 @@ TEST_CASE("Benchmark Suite: Computes median, speedup, and efficiency metrics") {
     std::getline(f, header);
     CHECK(header == "threads,warmup_ms,repeat1_ms,repeat2_ms,repeat3_ms,repeat4_ms,repeat5_ms,median_ms,speedup,efficiency");
 }
+

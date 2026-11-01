@@ -96,6 +96,31 @@ export interface BenchmarkRunParams {
     threads: number[];
 }
 
+export interface DeviceRecoveryLog {
+    attempt: number;
+    backoff_ms: number;
+    succeeded: boolean;
+    message: string;
+}
+
+export interface DeviceTelemetryResponse {
+    device?: string;
+    type?: string;
+    device_name: string;
+    part_number: string;
+    state: 'connected' | 'degraded' | 'faulted' | 'recovering';
+    simulated: boolean;
+    uptime_seconds: number;
+    sequence_number: number;
+    temperature_c: number;
+    voltage_v: number;
+    current_ma: number;
+    extra_metric_1: number;
+    extra_metric_2: number;
+    status_word: string;
+    recovery_history: DeviceRecoveryLog[];
+}
+
 export interface ThermalJobResult {
     meshes: MeshResult[];
     convergence: ConvergenceRow[];
@@ -261,6 +286,32 @@ export class ApiClient {
 
         if (!res.ok) {
             const err: ApiError = await res.json().catch(() => ({ message: 'Failed to load sample CSV' }));
+            throw err;
+        }
+        return res.json();
+    }
+
+    async getDevices(): Promise<{ simulated: boolean; devices: DeviceTelemetryResponse[] }> {
+        const res = await fetch(`${this.baseUrl}/api/devices`);
+        if (!res.ok) {
+            throw new Error(`Failed to fetch devices (${res.status})`);
+        }
+        return res.json();
+    }
+
+    async deviceAction(
+        deviceType: string,
+        action: 'telemetry' | 'ping' | 'reset' | 'inject_fault',
+        failCount: number = 2
+    ): Promise<DeviceTelemetryResponse | { simulated: boolean; status: string; fail_count?: number }> {
+        const res = await fetch(`${this.baseUrl}/api/devices/${deviceType}/${action}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ fail_count: failCount })
+        });
+
+        if (!res.ok) {
+            const err: ApiError = await res.json().catch(() => ({ message: `Action ${action} failed` }));
             throw err;
         }
         return res.json();

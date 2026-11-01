@@ -61,5 +61,11 @@ This document records architectural, numerical, and engineering decisions taken 
 - **Decision**: Implemented `ThreadPool` with RAII lifetime management and worker threads bounded by hardware concurrency. Work distribution uses `std::atomic<size_t> next_chunk{0}` with relaxed `fetch_add(16)`. Random generation utilizes `std::mt19937_64(seed)` with `(r >> 11) * 2^-53` to guarantee bitwise reproducibility across compilers and platforms. Benchmark harness records 1 warm-up run and 5 measured repeats, selecting the median time $T_p$ to calculate speedup $S_p = T_1 / T_p$ and parallel efficiency $E_p = S_p / p$ for $p \in \{1, 2, 4\}$.
 - **Verification**: Verified in `tests/core/batch_test.cpp` and `threadpool_test.cpp` that parallel solve matches serial to $\le 10^{-8}$ °C across 200 problem instances; verified that `results/benchmark.csv` conforms to spec.
 
+## Decision 013: Embedded Subsystem Simulation Invariant and Exponential Backoff Link Recovery
+- **Context**: Hard Rule 3 states: "The ONLY simulated subsystem is the embedded devices. Label it SIMULATED in the UI, in JSON ('simulated': true) and in docs." Section 3.3 requires injecting timeout faults and automated recovery across 3 retries with backoff delays of 200, 400, and 800 ms.
+- **Decision**: Implemented `IDeviceAdapter` and `DeviceSubsystem` representing STM32H753ZI MCU, Artix-7 XC7A100T FPGA, and FT2232HL JTAG bridge. All JSON payloads include `"simulated": true`, and all frontend cards render prominent amber `SIMULATED` badges. Timeout injection triggers an automated recovery state machine executing delays of 200ms (attempt 1), 400ms (attempt 2), and 800ms (attempt 3), logging each attempt in `recovery_history` before restoring nominal state or returning structured error after 3 attempts.
+- **Verification**: Verified in `tests/core/devices_test.cpp` and `tests/server/server_test.cpp` that 2-stage timeout recovers after 600 ms, permanent fault transitions to `Faulted`, and reset restores link. Documented in `docs/EMBEDDED.md` with SVG block diagram and real semiconductor datasheet citations.
+
+
 
 

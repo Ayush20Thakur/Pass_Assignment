@@ -537,3 +537,4 @@ export class PerformanceView {
         this.inspectorPanel.innerHTML = '';
     }
 }
+

@@ -3,7 +3,7 @@ import { apiClient } from './api/client';
 import { ThermalView } from './views/thermal_view';
 import { GeometryView } from './views/geometry_view';
 import { PerformanceView } from './views/performance_view';
-import { PlaceholderView } from './views/placeholder_view';
+import { HardwareView } from './views/hardware_view';
 import { toast } from './components/toast';
 
 type ViewMode = 'geometry' | 'thermal' | 'performance' | 'hardware';
@@ -110,12 +110,7 @@ class ForgeApp {
                 this.currentView = new PerformanceView(this.canvasEl, this.inspectorEl);
                 break;
             case 'hardware':
-                this.currentView = new PlaceholderView(
-                    this.canvasEl, this.inspectorEl,
-                    'Embedded Hardware Telemetry',
-                    'Simulated hardware controllers with timeout injection and automated recovery.',
-                    'Phase 7'
-                );
+                this.currentView = new HardwareView(this.canvasEl, this.inspectorEl);
                 break;
         }
 

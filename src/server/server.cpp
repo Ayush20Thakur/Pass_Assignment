@@ -69,7 +69,8 @@ std::string extract_file_content(const httplib::Request& req, std::string_view d
 ForgeServer::ForgeServer(int requested_port)
     : requested_port_(requested_port),
       http_server_(std::make_unique<httplib::Server>()),
-      job_manager_(std::make_shared<JobManager>()) {
+      job_manager_(std::make_shared<JobManager>()),
+      device_subsystem_(std::make_shared<forge::core::DeviceSubsystem>()) {
     setup_cors();
     setup_routes();
 }
@@ -512,17 +513,150 @@ void ForgeServer::setup_routes() {
         res.set_content(ss.str(), "text/csv");
     });
 
-    // 10. Hardware devices stub (SIMULATED flag per Rule 3)
-    http_server_->Post(R"(/api/devices/([a-zA-Z0-9_]+)/([a-zA-Z0-9_]+))", [](const httplib::Request& req, httplib::Response& res) {
+    // 10. Hardware devices endpoints (SIMULATED per Hard Rule 3)
+    http_server_->Get("/api/devices", [this](const httplib::Request&, httplib::Response& res) {
+        auto list = device_subsystem_->read_all_telemetry();
+        nlohmann::json arr = nlohmann::json::array();
+        for (const auto& tel : list) {
+            auto* adapter = device_subsystem_->get_adapter(tel.type);
+            nlohmann::json rec_arr = nlohmann::json::array();
+            for (const auto& r : tel.recovery_history) {
+                rec_arr.push_back({
+                    {"attempt", r.attempt},
+                    {"backoff_ms", r.backoff_ms},
+                    {"succeeded", r.succeeded},
+                    {"message", r.message}
+                });
+            }
+
+            arr.push_back({
+                {"type", to_string(tel.type)},
+                {"device_name", adapter ? adapter->device_name() : ""},
+                {"part_number", adapter ? adapter->part_number() : ""},
+                {"state", to_string(tel.state)},
+                {"simulated", true}, // Hard Rule 3
+                {"uptime_seconds", tel.uptime_seconds},
+                {"sequence_number", tel.sequence_number},
+                {"temperature_c", tel.temperature_c},
+                {"voltage_v", tel.voltage_v},
+                {"current_ma", tel.current_ma},
+                {"extra_metric_1", tel.extra_metric_1},
+                {"extra_metric_2", tel.extra_metric_2},
+                {"status_word", tel.status_word},
+                {"recovery_history", rec_arr}
+            });
+        }
+        res.set_content(nlohmann::json({{"simulated", true}, {"devices", arr}}).dump(), "application/json");
+    });
+
+    http_server_->Post(R"(/api/devices/([a-zA-Z0-9_]+)/([a-zA-Z0-9_]+))", [this](const httplib::Request& req, httplib::Response& res) {
         const std::string dev_type = req.matches[1];
         const std::string action = req.matches[2];
-        nlohmann::json resp = {
-            {"device", dev_type},
-            {"action", action},
-            {"simulated", true},
-            {"status", "ok"}
-        };
-        res.set_content(resp.dump(), "application/json");
+
+        auto* adapter = device_subsystem_->get_adapter(dev_type);
+        if (!adapter) {
+            res.status = 404;
+            res.set_content(make_error_json("device", "Unknown device: " + dev_type, "Use mcu, fpga, or jtag").dump(), "application/json");
+            return;
+        }
+
+        if (action == "telemetry") {
+            auto tel_res = adapter->read_telemetry();
+            if (std::holds_alternative<forge::core::Error>(tel_res)) {
+                const auto& err = std::get<forge::core::Error>(tel_res);
+                res.status = 504;
+                nlohmann::json err_json = make_error_json("telemetry", err.message, err.actionable_fix);
+                err_json["simulated"] = true; // Rule 3
+                res.set_content(err_json.dump(), "application/json");
+                return;
+            }
+
+            const auto& tel = std::get<forge::core::DeviceTelemetry>(tel_res);
+            nlohmann::json rec_arr = nlohmann::json::array();
+            for (const auto& r : tel.recovery_history) {
+                rec_arr.push_back({
+                    {"attempt", r.attempt},
+                    {"backoff_ms", r.backoff_ms},
+                    {"succeeded", r.succeeded},
+                    {"message", r.message}
+                });
+            }
+
+            nlohmann::json resp = {
+                {"device", dev_type},
+                {"device_name", adapter->device_name()},
+                {"part_number", adapter->part_number()},
+                {"state", to_string(tel.state)},
+                {"simulated", true}, // Rule 3
+                {"uptime_seconds", tel.uptime_seconds},
+                {"sequence_number", tel.sequence_number},
+                {"temperature_c", tel.temperature_c},
+                {"voltage_v", tel.voltage_v},
+                {"current_ma", tel.current_ma},
+                {"extra_metric_1", tel.extra_metric_1},
+                {"extra_metric_2", tel.extra_metric_2},
+                {"status_word", tel.status_word},
+                {"recovery_history", rec_arr}
+            };
+            res.set_content(resp.dump(), "application/json");
+            return;
+        }
+
+        if (action == "ping") {
+            auto ping_res = adapter->ping();
+            if (std::holds_alternative<forge::core::Error>(ping_res)) {
+                const auto& err = std::get<forge::core::Error>(ping_res);
+                res.status = 504;
+                nlohmann::json err_json = make_error_json("ping", err.message, err.actionable_fix);
+                err_json["simulated"] = true;
+                res.set_content(err_json.dump(), "application/json");
+                return;
+            }
+            nlohmann::json resp = {
+                {"device", dev_type},
+                {"action", "ping"},
+                {"simulated", true},
+                {"status", "ok"}
+            };
+            res.set_content(resp.dump(), "application/json");
+            return;
+        }
+
+        if (action == "reset") {
+            adapter->reset();
+            nlohmann::json resp = {
+                {"device", dev_type},
+                {"action", "reset"},
+                {"simulated", true},
+                {"status", "reset_ok"}
+            };
+            res.set_content(resp.dump(), "application/json");
+            return;
+        }
+
+        if (action == "inject_fault") {
+            size_t fail_count = 2; // Default: triggers 2 retries (200ms + 400ms) then recovers
+            try {
+                if (!req.body.empty()) {
+                    auto b = nlohmann::json::parse(req.body);
+                    if (b.contains("fail_count")) fail_count = b["fail_count"].get<size_t>();
+                }
+            } catch (...) {}
+
+            adapter->inject_fault(fail_count);
+            nlohmann::json resp = {
+                {"device", dev_type},
+                {"action", "inject_fault"},
+                {"simulated", true},
+                {"fail_count", fail_count},
+                {"status", "fault_injected"}
+            };
+            res.set_content(resp.dump(), "application/json");
+            return;
+        }
+
+        res.status = 400;
+        res.set_content(make_error_json("action", "Unknown action: " + action, "Supported actions: telemetry, ping, reset, inject_fault").dump(), "application/json");
     });
 }
 

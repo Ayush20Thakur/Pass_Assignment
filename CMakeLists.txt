@@ -70,6 +70,8 @@ add_library(forge_core STATIC
     src/core/threadpool.hpp
     src/core/batch.hpp
     src/core/batch.cpp
+    src/core/devices.hpp
+    src/core/devices.cpp
 )
 
 target_include_directories(forge_core PUBLIC
@@ -114,6 +116,7 @@ add_executable(forge_tests
     tests/core/csv_test.cpp
     tests/core/threadpool_test.cpp
     tests/core/batch_test.cpp
+    tests/core/devices_test.cpp
     tests/server/server_test.cpp
     src/server/job_manager.cpp
     src/server/server.cpp

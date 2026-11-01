@@ -92,3 +92,4 @@ BenchmarkSuiteResult run_benchmark_suite(
 bool export_benchmark_csv(const BenchmarkSuiteResult& suite, const std::filesystem::path& output_path);
 
 } // namespace forge::core
+

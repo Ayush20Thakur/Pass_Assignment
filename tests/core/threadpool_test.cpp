@@ -73,3 +73,4 @@ TEST_CASE("ThreadPool: Zero tasks and single thread handling") {
     });
     CHECK(count == 5);
 }
+

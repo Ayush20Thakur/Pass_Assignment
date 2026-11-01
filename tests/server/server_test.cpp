@@ -238,3 +238,55 @@ TEST_CASE("Server Integration: Benchmark run and results endpoints") {
 
     server.stop();
 }
+
+TEST_CASE("Server Integration: Embedded devices endpoints and Hard Rule 3 SIMULATED invariant") {
+    ForgeServer server(0);
+    REQUIRE(server.start(true));
+
+    const int port = server.get_port();
+    httplib::Client client("127.0.0.1", port);
+    client.set_connection_timeout(std::chrono::seconds(5));
+    client.set_read_timeout(std::chrono::seconds(5));
+
+    // 1. GET /api/devices
+    auto dev_res = client.Get("/api/devices");
+    REQUIRE(dev_res != nullptr);
+    CHECK(dev_res->status == 200);
+
+    auto dev_json = nlohmann::json::parse(dev_res->body);
+    CHECK(dev_json["simulated"] == true);
+    REQUIRE(dev_json["devices"].size() == 3);
+
+    for (const auto& d : dev_json["devices"]) {
+        CHECK(d["simulated"] == true);
+        CHECK(d.contains("device_name"));
+        CHECK(d.contains("part_number"));
+        CHECK(d["state"] == "connected");
+    }
+
+    // 2. POST /api/devices/mcu/telemetry
+    auto tel_res = client.Post("/api/devices/mcu/telemetry", "{}", "application/json");
+    REQUIRE(tel_res != nullptr);
+    CHECK(tel_res->status == 200);
+    auto tel_json = nlohmann::json::parse(tel_res->body);
+    CHECK(tel_json["simulated"] == true);
+    CHECK(tel_json["part_number"] == "STM32H753ZI");
+    CHECK(tel_json["temperature_c"] > 40.0);
+
+    // 3. Fault injection & reset
+    auto fault_res = client.Post("/api/devices/fpga/inject_fault", "{\"fail_count\": 1}", "application/json");
+    REQUIRE(fault_res != nullptr);
+    CHECK(fault_res->status == 200);
+    auto fault_json = nlohmann::json::parse(fault_res->body);
+    CHECK(fault_json["simulated"] == true);
+    CHECK(fault_json["status"] == "fault_injected");
+
+    auto reset_res = client.Post("/api/devices/fpga/reset", "{}", "application/json");
+    REQUIRE(reset_res != nullptr);
+    CHECK(reset_res->status == 200);
+    auto reset_json = nlohmann::json::parse(reset_res->body);
+    CHECK(reset_json["simulated"] == true);
+    CHECK(reset_json["status"] == "reset_ok");
+
+    server.stop();
+}

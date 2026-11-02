@@ -20,13 +20,13 @@ Forge integrates four core engineering views into a single unified workspace:
 
 ## Technical Documentation
 All comprehensive documentation is located in `docs/`:
-- **[`docs/REPORT.md`](file:///c:/Users/Vivtus/Downloads/Pass%20assignment/docs/REPORT.md)**: $\le 6$-page formal engineering report covering Tasks A–F, mathematical formulations, convergence tables, benchmark curves, and rubric audit.
-- **[`docs/OWNERSHIP.md`](file:///c:/Users/Vivtus/Downloads/Pass%20assignment/docs/OWNERSHIP.md)**: Statement of authorship, provenance, AI collaboration log (prompts, suggestions challenged/rejected), and complete 100-point rubric audit.
-- **[`docs/ARCHITECTURE.md`](file:///c:/Users/Vivtus/Downloads/Pass%20assignment/docs/ARCHITECTURE.md)**: Subsystem decomposition, Hard Rule 5 isolation boundaries, job lifecycle state machine, and memory ownership models.
-- **[`docs/EMBEDDED.md`](file:///c:/Users/Vivtus/Downloads/Pass%20assignment/docs/EMBEDDED.md)**: Heterogeneous embedded architecture, SVG interconnect diagram, pinout/voltage tables, datasheet citations, and automated recovery protocol.
-- **[`docs/DECISIONS.md`](file:///c:/Users/Vivtus/Downloads/Pass%20assignment/docs/DECISIONS.md)**: Formal architectural decision records (ADR 001–014).
-- **[`docs/AI_LOG.md`](file:///c:/Users/Vivtus/Downloads/Pass%20assignment/docs/AI_LOG.md)**: Chronological prompt-by-prompt session log tracking validation, corrections, and challenge tests.
-- **[`docs/backprop_handwritten.pdf`](file:///c:/Users/Vivtus/Downloads/Pass%20assignment/docs/backprop_handwritten.pdf)**: Handwritten-style mathematical derivation of multivariable chain rule, Taylor series truncation error analysis, and numerical verification table.
+- **[`docs/REPORT.md`](docs/REPORT.md)**: $\le 6$-page formal engineering report covering Tasks A–F, mathematical formulations, convergence tables, benchmark curves, and rubric audit.
+- **[`docs/OWNERSHIP.md`](docs/OWNERSHIP.md)**: Statement of authorship, provenance, AI collaboration log (prompts, suggestions challenged/rejected), and complete 100-point rubric audit.
+- **[`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md)**: Subsystem decomposition, Hard Rule 5 isolation boundaries, job lifecycle state machine, and memory ownership models.
+- **[`docs/EMBEDDED.md`](docs/EMBEDDED.md)**: Heterogeneous embedded architecture, SVG interconnect diagram, pinout/voltage tables, datasheet citations, and automated recovery protocol.
+- **[`docs/DECISIONS.md`](docs/DECISIONS.md)**: Formal architectural decision records (ADR 001–014).
+- **[`docs/AI_LOG.md`](docs/AI_LOG.md)**: Chronological prompt-by-prompt session log tracking validation, corrections, and challenge tests.
+- **[`docs/backprop_handwritten.pdf`](docs/backprop_handwritten.pdf)**: Handwritten-style mathematical derivation of multivariable chain rule, Taylor series truncation error analysis, and numerical verification table.
 
 ---
 

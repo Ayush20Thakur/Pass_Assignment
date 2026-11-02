@@ -215,3 +215,4 @@ Training over 100 gradient descent steps verified strictly monotonic loss decrea
 | **Task E: Embedded Subsystem** | 10 / 10 | Real datasheets, 200/400/800ms backoff, SIMULATED invariant | **100% Verified** |
 | **Task F: Backprop Derivation** | 10 / 10 | Handwritten PDF, central diff check $< 10^{-5}$, 100-step monotonic loss | **100% Verified** |
 | **TOTAL** | **100 / 100** | **31 test cases (1891 assertions), zero compiler warnings** | **FULL PASS** |
+

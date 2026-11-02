@@ -29,6 +29,9 @@ Launch.exe
 
 # Package archives
 *.zip
+*.bundle
+*.log
+server.port
 *.tar.gz
 
 # System files

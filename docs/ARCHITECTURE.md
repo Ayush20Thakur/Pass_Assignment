@@ -130,3 +130,4 @@ Double-clicking `Launch.exe` executes a native Win32 entry point that orchestrat
 - **Zero External CDNs**: All stylesheets, JavaScript bundles, Three.js modules, and uPlot libraries are pre-compiled into `dist/`.
 - **Bundled Typography**: WOFF2 binaries for **Inter** (UI) and **JetBrains Mono** (numerics) are bundled locally in `src/frontend/src/assets/fonts/` with `font-display: swap`.
 - **Localhost Binding**: All networking is strictly bound to `127.0.0.1`. The application makes zero external HTTP requests, sends zero telemetry off-box, and operates completely offline.
+

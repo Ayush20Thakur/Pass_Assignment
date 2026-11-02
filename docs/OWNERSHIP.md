@@ -116,3 +116,4 @@ The launcher will start `forge_server.exe` on a free ephemeral port and open you
 - **Thermal Analysis View**: Solve 1D FEM problems interactively, view $T(x)$ temperature profile, inspect $O(h^2)$ log-log convergence chart, and verify energy conservation.
 - **Performance View**: Execute multithreaded batch benchmark across 1, 2, and 4 threads, inspect speedup curves, and download `benchmark.csv`.
 - **Hardware View**: Monitor STM32, FPGA, and JTAG telemetry, inject communication faults, and observe real-time 3-stage exponential backoff link recovery.
+
